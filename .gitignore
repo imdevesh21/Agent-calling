@@ -1,0 +1,15 @@
+node_modules
+
+.next
+
+.env
+
+dist
+
+coverage
+
+*.log
+
+.turbo
+
+.vscode/settings.json
