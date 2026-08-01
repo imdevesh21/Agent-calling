@@ -1,7 +1,7 @@
 {
-  "name": "hireflow-ai",
+  "name": "hireflow-ai/package.json",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
