@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RECRUITER
+  CANDIDATE
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  role         Role
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recruiter Recruiter?
+  candidate Candidate?
+}
+
+model Organization {
+  id       String  @id @default(cuid())
+  name     String
+  website  String?
+  industry String?
+  size     Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recruiters Recruiter[]
+  jobs       Job[]
+}
+
+model Recruiter {
+  id String @id @default(cuid())
+
+  designation String?
+  phone       String?
+
+  userId         String @unique
+  organizationId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  jobs Job[]
+}
+
+model Candidate {
+  id String @id @default(cuid())
+
+  experience     Int?
+  location       String?
+  expectedSalary Int?
+  noticePeriod   Int?
+  currentCompany String?
+
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  resumes      Resume[]
+  applications Application[]
+}
+
+model Resume {
+  id String @id @default(cuid())
+
+  title    String?
+  fileUrl  String
+  fileName String
+
+  candidateId String
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  uploadedAt DateTime @default(now())
+}
+
+model Job {
+  id String @id @default(cuid())
+
+  title       String
+  description String
+
+  location String?
+  salary   Int?
+
+  employmentType EmploymentType
+
+  status JobStatus @default(DRAFT)
+
+  organizationId String
+  recruiterId    String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Application {
+  id String @id @default(cuid())
+
+  candidateId String
+  jobId       String
+
+  status ApplicationStatus @default(APPLIED)
+
+  appliedAt DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  interviews Interview[]
+}
+
+model Interview {
+  id String @id @default(cuid())
+
+  applicationId String
+
+  scheduledAt DateTime
+
+  meetingLink String?
+
+  notes String?
+
+  status InterviewStatus @default(SCHEDULED)
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}

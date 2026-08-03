@@ -1,5 +1,5 @@
 {
-  "name": "hireflow-ai/package.json",
+  "name": "hireflow-ai",
   "private": true,
   "packageManager": "pnpm@11.18.0",
   "scripts": {
