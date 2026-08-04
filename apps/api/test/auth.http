@@ -1,0 +1,10 @@
+### Register User
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Devesh",
+  "lastName": "Sharma",
+  "email": "devesh@gmail.com",
+  "password": "Password@123"
+}

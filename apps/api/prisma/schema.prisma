@@ -4,8 +4,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url= env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
+
+// =======================================
+// ENUMS
+// =======================================
 
 enum Role {
   ADMIN
@@ -41,40 +45,94 @@ enum InterviewStatus {
   CANCELLED
 }
 
+enum ResumeStatus {
+  UPLOADED
+  PARSED
+  FAILED
+}
+
+enum ConversationRole {
+  USER
+  ASSISTANT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+// =======================================
+// AUTH
+// =======================================
+
 model User {
   id           String @id @default(cuid())
   email        String @unique
   passwordHash String
-  role         Role
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role Role
+
+  firstName String
+  lastName  String
+
+  avatarUrl String?
+
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
 
   recruiter Recruiter?
   candidate Candidate?
-}
 
-model Organization {
-  id       String  @id @default(cuid())
-  name     String
-  website  String?
-  industry String?
-  size     Int?
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// =======================================
+// ORGANIZATION
+// =======================================
+
+model Organization {
+  id String @id @default(cuid())
+
+  name String
+
+  description String?
+
+  website String?
+
+  logoUrl String?
+
+  industry String?
+
+  location String?
+
+  size Int?
 
   recruiters Recruiter[]
-  jobs       Job[]
+
+  jobs Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Recruiter {
   id String @id @default(cuid())
 
   designation String?
-  phone       String?
 
-  userId         String @unique
+  phone String?
+
+  linkedinUrl String?
+
+  profileImage String?
+
+  userId String @unique
+
   organizationId String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -82,58 +140,94 @@ model Recruiter {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   jobs Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Candidate {
   id String @id @default(cuid())
 
-  experience     Int?
-  location       String?
+  experience Int?
+
+  headline String?
+
+  bio String?
+
+  location String?
+
   expectedSalary Int?
-  noticePeriod   Int?
+
+  noticePeriod Int?
+
   currentCompany String?
+
+  linkedinUrl String?
+
+  githubUrl String?
+
+  portfolioUrl String?
 
   userId String @unique
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  resumes      Resume[]
+  resumes Resume[]
+
   applications Application[]
+
+  skills CandidateSkill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
+// =======================================
+// SKILLS
+// =======================================
+
+model Skill {
+  id String @id @default(cuid())
+
+  name String @unique
+
+  candidates CandidateSkill[]
+
+  createdAt DateTime @default(now())
+}
+
+model CandidateSkill {
+  candidateId String
+
+  skillId String
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([candidateId, skillId])
+}
+
+// =======================================
+// RESUME
+// =======================================
 
 model Resume {
   id String @id @default(cuid())
 
-  title    String?
-  fileUrl  String
-  fileName String
-
   candidateId String
 
+  title String?
+
+  fileName String
+
+  fileUrl String
+
+  status ResumeStatus @default(UPLOADED)
+
+  parsedJson Json?
+
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-
-  uploadedAt DateTime @default(now())
-}
-
-model Job {
-  id String @id @default(cuid())
-
-  title       String
-  description String
-
-  location String?
-  salary   Int?
-
-  employmentType EmploymentType
-
-  status JobStatus @default(DRAFT)
-
-  organizationId String
-  recruiterId    String
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
   applications Application[]
 
@@ -141,13 +235,62 @@ model Job {
   updatedAt DateTime @updatedAt
 }
 
+// =======================================
+// JOB
+// =======================================
+
+model Job {
+  id String @id @default(cuid())
+
+  title String
+
+  description String
+
+  location String?
+
+  salaryMin Int?
+
+  salaryMax Int?
+
+  experience Int?
+
+  employmentType EmploymentType
+
+  status JobStatus @default(DRAFT)
+
+  recruiterId String
+
+  organizationId String
+
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recruiterId])
+  @@index([organizationId])
+}
+
+// =======================================
+// APPLICATION
+// =======================================
+
 model Application {
   id String @id @default(cuid())
 
   candidateId String
-  jobId       String
+
+  jobId String
+
+  resumeId String
 
   status ApplicationStatus @default(APPLIED)
+
+  score Float?
 
   appliedAt DateTime @default(now())
 
@@ -155,23 +298,119 @@ model Application {
 
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  interviews Interview[]
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  interview Interview?
+
+  conversation Conversation?
+
+  aiEvaluation AiEvaluation?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([jobId])
 }
+
+// =======================================
+// INTERVIEW
+// =======================================
 
 model Interview {
   id String @id @default(cuid())
 
-  applicationId String
+  applicationId String @unique
 
   scheduledAt DateTime
 
   meetingLink String?
 
-  notes String?
+  feedback String?
 
   status InterviewStatus @default(SCHEDULED)
 
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// =======================================
+// AI CONVERSATION
+// =======================================
+
+model Conversation {
+  id String @id @default(cuid())
+
+  applicationId String @unique
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  conversationId String
+
+  role ConversationRole
+
+  content String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// =======================================
+// AI EVALUATION
+// =======================================
+
+model AiEvaluation {
+  id String @id @default(cuid())
+
+  applicationId String @unique
+
+  model String
+
+  score Float?
+
+  summary String?
+
+  strengths String?
+
+  weaknesses String?
+
+  recommendation String?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// =======================================
+// NOTIFICATIONS
+// =======================================
+
+model Notification {
+  id String @id @default(cuid())
+
+  userId String
+
+  title String
+
+  message String
+
+  type NotificationType
+
+  isRead Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
