@@ -4,6 +4,7 @@ import configs from './config';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
