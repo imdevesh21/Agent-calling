@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:3001/api
+@accessToken = replace-with-recruiter-access-token
+@jobId = replace-with-job-id
+
+### Create an organization and recruiter profile (authenticated candidate)
+POST {{baseUrl}}/recruiters/onboard
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "organizationName": "HireFlow",
+  "organizationDescription": "AI-powered hiring platform",
+  "organizationWebsite": "https://hireflow.example",
+  "organizationIndustry": "Technology",
+  "organizationLocation": "Bengaluru, India",
+  "organizationSize": 20,
+  "designation": "Hiring Manager"
+}
+
+### Get recruiter profile
+GET {{baseUrl}}/recruiters/me
+Authorization: Bearer {{accessToken}}
+
+### Create a draft job
+POST {{baseUrl}}/recruiters/jobs
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Backend Engineer",
+  "description": "Build reliable NestJS services for the hiring platform.",
+  "location": "Bengaluru, India",
+  "salaryMin": 1200000,
+  "salaryMax": 1800000,
+  "experience": 3,
+  "employmentType": "FULL_TIME"
+}
+
+### List only the current recruiter's jobs
+GET {{baseUrl}}/recruiters/jobs
+Authorization: Bearer {{accessToken}}
+
+### Publish a draft job
+POST {{baseUrl}}/recruiters/jobs/{{jobId}}/publish
+Authorization: Bearer {{accessToken}}
+
+### Close a job
+POST {{baseUrl}}/recruiters/jobs/{{jobId}}/close
+Authorization: Bearer {{accessToken}}
