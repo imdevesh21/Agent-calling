@@ -1,0 +1,43 @@
+@baseUrl = http://localhost:3001/api
+@accessToken = replace-with-candidate-access-token
+@jobId = replace-with-open-job-id
+
+### Create a candidate profile
+POST {{baseUrl}}/candidates/onboard
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "experience": 3,
+  "headline": "Backend Engineer",
+  "bio": "I build scalable TypeScript services.",
+  "location": "Bengaluru, India",
+  "expectedSalary": 1800000,
+  "noticePeriod": 30,
+  "currentCompany": "Example Labs",
+  "linkedinUrl": "https://www.linkedin.com/in/example",
+  "githubUrl": "https://github.com/example",
+  "skills": ["TypeScript", "NestJS", "PostgreSQL"]
+}
+
+### View candidate profile
+GET {{baseUrl}}/candidates/me
+Authorization: Bearer {{accessToken}}
+
+### Update candidate profile and skills
+PATCH {{baseUrl}}/candidates/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "headline": "Senior Backend Engineer",
+  "skills": ["TypeScript", "NestJS", "Prisma", "PostgreSQL"]
+}
+
+### Browse published jobs
+GET {{baseUrl}}/candidates/jobs
+Authorization: Bearer {{accessToken}}
+
+### View one published job
+GET {{baseUrl}}/candidates/jobs/{{jobId}}
+Authorization: Bearer {{accessToken}}

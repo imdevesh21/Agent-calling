@@ -4,10 +4,11 @@ POST http://localhost:3001/api/auth/register
 Content-Type: application/json
 
 {
-  "firstName":"Devesh",
+  "firstName":"Shruti",
   "lastName":"Sharma",
-  "email":"devesh@gmail.com",
-  "password":"Password@123"
+  "email":"Shruti@gmail.com",
+  "password":"Password@123",
+  "role": "HR"
 }
 
 ### Login User

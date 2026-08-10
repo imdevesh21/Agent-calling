@@ -4,6 +4,7 @@ import configs from './config';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CandidateModule } from './modules/candidate/candidate.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { RecruiterModule } from './modules/recruiter/recruiter.module';
 
@@ -17,6 +18,7 @@ import { RecruiterModule } from './modules/recruiter/recruiter.module';
     PrismaModule,
     HealthModule,
     AuthModule,
+    CandidateModule,
     RecruiterModule,
     JobsModule,
   ],
