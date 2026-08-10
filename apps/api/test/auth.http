@@ -9,3 +9,27 @@ Content-Type: application/json
   "email":"devesh@gmail.com",
   "password":"Password@123"
 }
+
+### Login User
+
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email":"devesh@gmail.com",
+  "password":"Password@123"
+}
+
+### Get Current User
+
+GET http://localhost:3001/api/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Refresh Tokens
+
+POST http://localhost:3001/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken":"{{refreshToken}}"
+}
