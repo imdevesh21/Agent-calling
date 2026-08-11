@@ -7,7 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CandidateModule } from './modules/candidate/candidate.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { RecruiterModule } from './modules/recruiter/recruiter.module';
-
+import { ResumeModule } from './modules/resume/resume.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +21,7 @@ import { RecruiterModule } from './modules/recruiter/recruiter.module';
     CandidateModule,
     RecruiterModule,
     JobsModule,
+    ResumeModule,
   ],
 })
 export class AppModule {}
