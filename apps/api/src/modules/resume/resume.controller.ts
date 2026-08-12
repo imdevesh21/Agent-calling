@@ -7,16 +7,12 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  Request,
-  BadRequestException,
+  Req,
 } from '@nestjs/common';
-
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-
-import { ResumeService } from './resume.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ResumeService } from './resume.service';
+import { multerConfig } from './multer.config';
 
 @Controller('resumes')
 @UseGuards(JwtAuthGuard)
@@ -24,51 +20,19 @@ export class ResumeController {
   constructor(private readonly resumeService: ResumeService) {}
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('resume', {
-      storage: diskStorage({
-        destination: './uploads/resumes',
-        filename: (_req, file, callback) => {
-          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, unique + extname(file.originalname));
-        },
-      }),
-      fileFilter: (_req, file, callback) => {
-        const allowed = ['.pdf', '.doc', '.docx'];
-        const ext = extname(file.originalname).toLowerCase();
-
-        if (!allowed.includes(ext)) {
-          return callback(
-            new BadRequestException('Only PDF, DOC and DOCX files are allowed'),
-            false,
-          );
-        }
-
-        callback(null, true);
-      },
-      limits: {
-        fileSize: 5 * 1024 * 1024,
-      },
-    }),
-  )
-  uploadResume(
-    @UploadedFile() file: any,
-    @Request() req: any,
-  ) {
-    if (!file) {
-      throw new BadRequestException('Resume file is required');
-    }
-
-    return this.resumeService.uploadResume(req.user.userId, file);
+  @UseInterceptors(FileInterceptor('resume', multerConfig))
+  uploadResume(@UploadedFile() file: any, @Req() req: any) {
+    const userId = req.user.id;
+    return this.resumeService.uploadResume(userId, file);
   }
 
   @Get('me')
-  getMyResumes(@Request() req: any) {
-    return this.resumeService.getMyResumes(req.user.userId);
+  getMyResumes(@Req() req: any) {
+    return this.resumeService.getMyResumes(req.user.id);
   }
 
   @Delete(':id')
-  deleteResume(@Param('id') id: string, @Request() req: any) {
-    return this.resumeService.deleteResume(req.user.userId, id);
+  deleteResume(@Param('id') id: string, @Req() req: any) {
+    return this.resumeService.deleteResume(req.user.id, id);
   }
 }

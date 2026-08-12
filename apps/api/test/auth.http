@@ -1,36 +1,250 @@
-### Register User
+@baseUrl = http://localhost:3001/api
 
-POST http://localhost:3001/api/auth/register
+### =========================================
+### CANDIDATE TOKENS (from your registration)
+### =========================================
+
+@candidateToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXNtc2l3MHMwMDAwb3U5NG92ZW1mNjFtIiwiZW1haWwiOiJkZXZlc2hAZ21haWwuY29tIiwicm9sZSI6IkNBTkRJREFURSIsInRva2VuVHlwZSI6ImFjY2VzcyIsImlhdCI6MTc4NjUxMDU2OSwiZXhwIjoxNzg2NTExNDY5fQ.FVPFdcTrYv1jcg_vxBNPWDscze31TqMZeltWpZLLSqM
+
+@candidateRefreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXNtc2l3MHMwMDAwb3U5NG92ZW1mNjFtIiwiZW1haWwiOiJkZXZlc2hAZ21haWwuY29tIiwicm9sZSI6IkNBTkRJREFURSIsInRva2VuVHlwZSI6InJlZnJlc2giLCJpYXQiOjE3ODY1MTA1NjksImV4cCI6MTc4NzExNTM2OX0.LwwhI8LO1Lo2WSvVcoN7WDsQROKantWiKERvZRwJQkc
+
+### =========================================
+### 1. LOGIN CANDIDATE (optional)
+### =========================================
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "firstName":"Shruti",
-  "lastName":"Sharma",
-  "email":"Shruti@gmail.com",
-  "password":"Password@123",
-  "role": "HR"
+  "email": "devesh@gmail.com",
+  "password": "Password@123"
 }
 
-### Login User
+###
 
-POST http://localhost:3001/api/auth/login
+### =========================================
+### 2. GET CURRENT CANDIDATE
+### =========================================
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### =========================================
+### 3. REFRESH TOKENS
+### =========================================
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
-  "email":"devesh@gmail.com",
-  "password":"Password@123"
+  "refreshToken": "{{candidateRefreshToken}}"
 }
 
-### Get Current User
+###
 
-GET http://localhost:3001/api/auth/me
-Authorization: Bearer {{accessToken}}
-
-### Refresh Tokens
-
-POST http://localhost:3001/api/auth/refresh
+### =========================================
+### 4. CANDIDATE ONBOARDING
+### =========================================
+POST {{baseUrl}}/candidates/onboard
+Authorization: Bearer {{candidateToken}}
 Content-Type: application/json
 
 {
-  "refreshToken":"{{refreshToken}}"
+  "experience": 1,
+  "headline": "Backend Developer",
+  "bio": "NestJS and Prisma learner",
+  "location": "Jaipur",
+  "expectedSalary": 600000,
+  "noticePeriod": 30,
+  "skills": ["Node.js", "NestJS", "Prisma", "PostgreSQL"]
 }
+
+###
+
+### =========================================
+### 5. GET CANDIDATE PROFILE
+### =========================================
+GET {{baseUrl}}/candidates/me
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### =========================================
+### 6. UPLOAD RESUME (use Thunder Client)
+### =========================================
+# POST {{baseUrl}}/resumes
+# Authorization: Bearer {{candidateToken}}
+# Body -> Form-Data
+# Key: resume (File)
+# Choose a PDF file
+
+###
+
+### =========================================
+### 7. LIST MY RESUMES
+### =========================================
+GET {{baseUrl}}/resumes/me
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### 👉 After running step 7, copy a resume id below
+@resumeId = PASTE_RESUME_ID_HERE
+
+###
+
+### =========================================
+### 8. REGISTER RECRUITER
+### =========================================
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Shruti",
+  "lastName": "Sharma",
+  "email": "shruti@gmail.com",
+  "password": "Password@123",
+  "role": "RECRUITER"
+}
+
+###
+
+### =========================================
+### 9. LOGIN RECRUITER
+### =========================================
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "shruti@gmail.com",
+  "password": "Password@123"
+}
+
+###
+
+### 👉 Copy recruiter access token below
+@recruiterToken = PASTE_RECRUITER_ACCESS_TOKEN_HERE
+
+###
+
+### =========================================
+### 10. RECRUITER ONBOARDING
+### =========================================
+POST {{baseUrl}}/recruiters/onboard
+Authorization: Bearer {{recruiterToken}}
+Content-Type: application/json
+
+{
+  "organizationName": "HireFlow",
+  "designation": "Hiring Manager"
+}
+
+###
+
+### =========================================
+### 11. GET RECRUITER PROFILE
+### =========================================
+GET {{baseUrl}}/recruiters/me
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### =========================================
+### 12. CREATE JOB
+### =========================================
+POST {{baseUrl}}/recruiters/jobs
+Authorization: Bearer {{recruiterToken}}
+Content-Type: application/json
+
+{
+  "title": "Backend Engineer",
+  "description": "Build APIs using NestJS and Prisma",
+  "location": "Remote",
+  "salaryMin": 500000,
+  "salaryMax": 900000,
+  "experience": 1,
+  "employmentType": "FULL_TIME"
+}
+
+###
+
+### =========================================
+### 13. LIST RECRUITER JOBS
+### =========================================
+GET {{baseUrl}}/recruiters/jobs
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### 👉 Copy a job id below
+@jobId = PASTE_JOB_ID_HERE
+
+###
+
+### =========================================
+### 14. PUBLISH JOB
+### =========================================
+POST {{baseUrl}}/recruiters/jobs/{{jobId}}/publish
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### =========================================
+### 15. PUBLIC JOB LISTING
+### =========================================
+GET {{baseUrl}}/jobs
+
+###
+
+### =========================================
+### 16. APPLY TO JOB
+### =========================================
+POST {{baseUrl}}/applications
+Authorization: Bearer {{candidateToken}}
+Content-Type: application/json
+
+{
+  "jobId": "{{jobId}}",
+  "resumeId": "{{resumeId}}"
+}
+
+###
+
+### =========================================
+### 17. MY APPLICATIONS
+### =========================================
+GET {{baseUrl}}/applications/me
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### 👉 Copy an application id below
+@applicationId = PASTE_APPLICATION_ID_HERE
+
+###
+
+### =========================================
+### 18. RECRUITER VIEW APPLICATIONS
+### =========================================
+GET {{baseUrl}}/applications/recruiter
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### =========================================
+### 19. UPDATE APPLICATION STATUS
+### =========================================
+PATCH {{baseUrl}}/applications/{{applicationId}}/status
+Authorization: Bearer {{recruiterToken}}
+Content-Type: application/json
+
+{
+  "status": "SCREENING"
+}
+
+###
+
+### =========================================
+### 20. VERIFY UPDATED STATUS
+### =========================================
+GET {{baseUrl}}/applications/me
+Authorization: Bearer {{candidateToken}}
