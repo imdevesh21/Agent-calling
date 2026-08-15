@@ -87,45 +87,53 @@ export class ResumeService {
     if (!userId) {
       throw new ForbiddenException('User ID missing from JWT token');
     }
-
-    const candidate = await this.prisma.candidate.findUnique({
-      where: { userId },
-      select: { id: true },
+  
+    console.log('DELETE SERVICE DEBUG');
+    console.log('resumeId:', id);
+    console.log('userId:', userId);
+  
+    const resume = await this.prisma.resume.findFirst({
+      where: {
+        id: id,
+        candidate: {
+          is: {
+            userId: userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        fileName: true,
+      },
     });
-
-    if (!candidate) {
-      throw new NotFoundException('Candidate profile not found');
-    }
-
-    const resume = await this.prisma.resume.findUnique({
-      where: { id },
-      select: { candidateId: true, fileName: true },
-    });
-
+  
+    console.log('FOUND RESUME:', resume);
+  
     if (!resume) {
-      throw new NotFoundException('Resume not found');
+      throw new NotFoundException(
+        'Resume not found or you do not have permission to delete it',
+      );
     }
-
-    if (resume.candidateId !== candidate.id) {
-      throw new ForbiddenException('Not your resume');
-    }
-
+  
     const filePath = path.join(
       process.cwd(),
       'uploads',
       'resumes',
       resume.fileName,
     );
-
-    // Delete file asynchronously
+  
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
     }
-
+  
     await this.prisma.resume.delete({
-      where: { id },
+      where: {
+        id: resume.id,
+      },
     });
-
-    return { message: 'Resume deleted successfully' };
+  
+    return {
+      message: 'Resume deleted successfully',
+    };
   }
 }

@@ -17,22 +17,41 @@ import { multerConfig } from './multer.config';
 @Controller('resumes')
 @UseGuards(JwtAuthGuard)
 export class ResumeController {
-  constructor(private readonly resumeService: ResumeService) {}
+  constructor(private readonly resumeService: ResumeService) { }
 
   @Post()
   @UseInterceptors(FileInterceptor('resume', multerConfig))
-  uploadResume(@UploadedFile() file: any, @Req() req: any) {
+  uploadResume(
+    @UploadedFile() file: any,
+    @Req() req: any,
+  ) {
     const userId = req.user.id;
+
     return this.resumeService.uploadResume(userId, file);
   }
 
   @Get('me')
   getMyResumes(@Req() req: any) {
-    return this.resumeService.getMyResumes(req.user.id);
+    console.log('req.user in controller:', req.user);
+    const userId = req.user.id;
+    return this.resumeService.getMyResumes(userId);
   }
-
   @Delete(':id')
-  deleteResume(@Param('id') id: string, @Req() req: any) {
-    return this.resumeService.deleteResume(req.user.id, id);
+  deleteResume(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    console.log('REQ.USER:', req.user);
+
+    const userId =
+      req.user?.id ??
+      req.user?.sub ??
+      req.user?.userId;
+
+    console.log('DELETE REQUEST');
+    console.log('Resume ID:', id);
+    console.log('JWT User ID:', userId);
+
+    return this.resumeService.deleteResume(id, userId);
   }
 }
